@@ -177,20 +177,22 @@ const MyChats = ({ fetchAgain }) => {
   // };
 
   useEffect(() => {
-    // const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    // if (userInfo) {
-    //   setLoggedUser(userInfo);
-    // }
-    // changed this so that it will load smoothly after refreshing the page
-    setIsLoading(true);
-    fetchChats()
-      .then(() => {
-        setIsLoading(false);
-      })
-      .catch((error) => {
+    const loadChats = async () => {
+      // Only show loading if there are no chats yet
+      if (!chats.length) {
+        setIsLoading(true);
+      }
+
+      try {
+        await fetchChats();
+      } catch (error) {
         console.error("Error fetching chats:", error);
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+
+    loadChats();
   }, [user, selectedChat, fetchAgain]); // Added dependencies
 
   // // CHANGED: Added debug useEffect
