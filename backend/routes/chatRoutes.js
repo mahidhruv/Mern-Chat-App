@@ -22,6 +22,6 @@ router.route("/rename").put(protect, renameGroup);
 router.route("/groupadd").put(protect, addToGroup);
 
 // for remove someone from the group or leave the group -> /api/chat/groupremove
-router.route("/groupremove").delete(protect, removeFromGroup);
+router.route("/groupremove").put(protect, removeFromGroup);
 
 module.exports = router;

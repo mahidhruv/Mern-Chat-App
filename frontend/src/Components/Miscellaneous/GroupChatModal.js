@@ -98,8 +98,8 @@ const GroupChatModal = ({ children }) => {
       });
     } catch (error) {
       toast({
-        title: "Error Occured!",
-        description: "Failed to Create the Group Chat!",
+        title: "Failed to Create the Group Chat!",
+        description: "Atleast 3 group members required.",
         status: "error",
         duration: 3000,
         isClosable: true,

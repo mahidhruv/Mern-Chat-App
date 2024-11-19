@@ -177,20 +177,22 @@ const MyChats = ({ fetchAgain }) => {
   // };
 
   useEffect(() => {
-    // const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-    // if (userInfo) {
-    //   setLoggedUser(userInfo);
-    // }
-    // changed this so that it will load smoothly after refreshing the page
-    setIsLoading(true);
-    fetchChats()
-      .then(() => {
-        setIsLoading(false);
-      })
-      .catch((error) => {
+    const loadChats = async () => {
+      // Only show loading if there are no chats yet
+      if (!chats.length) {
+        setIsLoading(true);
+      }
+
+      try {
+        await fetchChats();
+      } catch (error) {
         console.error("Error fetching chats:", error);
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+
+    loadChats();
   }, [user, selectedChat, fetchAgain]); // Added dependencies
 
   // // CHANGED: Added debug useEffect
@@ -305,11 +307,12 @@ const MyChats = ({ fetchAgain }) => {
                 }}
               >
                 {/* CHANGE : Optimized chat name rendering with null checks */}
-                <Text>
+                <Text fontSize={"lg"}>
                   {chat && !chat.isGroupChat && loggedUser && chat.users
                     ? getSender(loggedUser, chat.users)
                     : chat.chatName || "Unnamed Chat"}
                 </Text>
+
                 {/* For deleting the chat */}
                 <Button
                   className="delete-button"
@@ -323,9 +326,10 @@ const MyChats = ({ fetchAgain }) => {
                   }}
                   ml={2} // Add margin to the left of button
                 >
-                  <CloseIcon boxSize="3" />
+                  <CloseIcon boxSize="auto" />
                 </Button>
-                {/* NEW: Add this AlertDialog component */}
+
+                {/* Add this AlertDialog component */}
                 <AlertDialog
                   isOpen={isDeleteAlertOpen}
                   leastDestructiveRef={cancelRef}
