@@ -13,7 +13,7 @@ const accessChat = asyncHandler(async (req, res) => {
   }
 
   //finding the id of both the users
-  var isChat = await Chat.find({
+  let isChat = await Chat.find({
     isGroupChat: false,
     $and: [
       { users: { $elemMatch: { $eq: req.user._id } } },
@@ -31,7 +31,7 @@ const accessChat = asyncHandler(async (req, res) => {
   if (isChat.length > 0) {
     res.send(isChat[0]);
   } else {
-    var chatData = {
+    let chatData = {
       chatName: "sender",
       isGroupChat: false,
       users: [req.user._id, userId],
@@ -105,7 +105,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
     return res.status(400).send({ message: "Please Fill all the fields" });
   }
 
-  var users = JSON.parse(req.body.users);
+  let users = JSON.parse(req.body.users);
 
   if (users.length < 2) {
     return res
