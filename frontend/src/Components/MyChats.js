@@ -307,11 +307,12 @@ const MyChats = ({ fetchAgain }) => {
                 }}
               >
                 {/* CHANGE : Optimized chat name rendering with null checks */}
-                <Text>
+                <Text fontSize={"lg"}>
                   {chat && !chat.isGroupChat && loggedUser && chat.users
                     ? getSender(loggedUser, chat.users)
                     : chat.chatName || "Unnamed Chat"}
                 </Text>
+
                 {/* For deleting the chat */}
                 <Button
                   className="delete-button"
@@ -325,9 +326,10 @@ const MyChats = ({ fetchAgain }) => {
                   }}
                   ml={2} // Add margin to the left of button
                 >
-                  <CloseIcon boxSize="3" />
+                  <CloseIcon boxSize="auto" />
                 </Button>
-                {/* NEW: Add this AlertDialog component */}
+
+                {/* Add this AlertDialog component */}
                 <AlertDialog
                   isOpen={isDeleteAlertOpen}
                   leastDestructiveRef={cancelRef}
