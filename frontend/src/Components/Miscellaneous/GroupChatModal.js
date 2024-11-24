@@ -36,6 +36,7 @@ const GroupChatModal = ({ children }) => {
   const handleSearch = async (query) => {
     setSearch(query);
     if (!query) {
+      setSearchResult([]); // Clear the search results when query is empty
       return;
     }
     try {
@@ -47,8 +48,8 @@ const GroupChatModal = ({ children }) => {
       };
       const { data } = await axios.get(`/api/user?search=${query}`, config);
       // console.log("search data:", data);
-      setIsLoading(false);
       setSearchResult(data);
+      setIsLoading(false);
     } catch (error) {
       toast({
         title: "Error Occured!",

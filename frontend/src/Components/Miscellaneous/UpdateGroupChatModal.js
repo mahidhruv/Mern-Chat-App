@@ -38,6 +38,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
   const toast = useToast();
 
   const { selectedChat, setSelectedChat, user } = ChatState();
+  const loggedUser = user; // Add this line
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
 
@@ -46,6 +47,9 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
 
   // For search user state
   const [isSearched, setIsSearched] = useState(false);
+
+  const [isRemoveAlertOpen, setIsRemoveAlertOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState(null);
 
   // Remove handler to remove user from group -> only admin can remove the user
   const handleRemove = async (user1) => {
@@ -146,6 +150,21 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
   // Function to close leave alert
   const closeLeaveAlert = () => {
     setIsLeaveAlertOpen(false);
+  };
+
+  const openRemoveAlert = (user1) => {
+    setUserToRemove(user1);
+    setIsRemoveAlertOpen(true);
+  };
+
+  const closeRemoveAlert = () => {
+    setIsRemoveAlertOpen(false);
+    setUserToRemove(null);
+  };
+
+  const handleRemoveUser = () => {
+    closeRemoveAlert();
+    handleRemove(userToRemove);
   };
 
   // hadler to add the user in the group
@@ -299,15 +318,45 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
             {/* All of the users that are currently inside the group */}
             <Box w={"100%"} display={"flex"} flexWrap={"wrap"} pb={3}>
               {selectedChat.users.map((user) => (
+                // <UserBadgeItem
+                //   key={user._id}
+                //   user={user}
+                //   handleFunction={() => {
+                //     if (
+                //       selectedChat.groupAdmin._id === user._id ||
+                //       user._id === user._id
+                //     ) {
+                //       handleRemove(user);
+                //     } else {
+                //       toast({
+                //         title: "Only admins can remove someone!",
+                //         status: "error",
+                //         duration: 3000,
+                //         isClosable: true,
+                //         position: "top",
+                //       });
+                //     }
+                //   }}
+                // />
                 <UserBadgeItem
                   key={user._id}
                   user={user}
                   handleFunction={() => {
-                    if (
-                      selectedChat.groupAdmin._id === user._id ||
-                      user._id === user._id
-                    ) {
-                      handleRemove(user);
+                    if (user._id === selectedChat.groupAdmin._id) {
+                      toast({
+                        title: "Admin cannot be removed!",
+                        description: "Transfer admin rights before removing",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                        position: "top",
+                      });
+                    } else if (user._id === loggedUser._id) {
+                      // If user is removing themselves
+                      openLeaveAlert();
+                    } else if (loggedUser._id === selectedChat.groupAdmin._id) {
+                      // If logged-in user is admin and removing someone else
+                      openRemoveAlert(user);
                     } else {
                       toast({
                         title: "Only admins can remove someone!",
@@ -398,6 +447,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
         </ModalContent>
       </Modal>
 
+      {/* Alert Dialog for leaving the group */}
       <AlertDialog
         isOpen={isLeaveAlertOpen}
         leastDestructiveRef={cancelRef}
@@ -434,6 +484,39 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain }) => {
                 transition="all 0.2s"
               >
                 Leave Group
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
+      {/* Alert Dialog for removing user */}
+      <AlertDialog
+        isOpen={isRemoveAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={closeRemoveAlert}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Remove User
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to remove{" "}
+              <Text as={"span"} fontWeight="bold">
+                {" "}
+                {userToRemove?.name}{" "}
+              </Text>{" "}
+              from the group?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={closeRemoveAlert}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleRemoveUser} ml={3}>
+                Remove
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
