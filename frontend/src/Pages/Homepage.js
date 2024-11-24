@@ -44,7 +44,7 @@ const Homepage = () => {
         borderRadius={"lg"}
         borderWidth={"1px"}
       >
-        <Text fontSize="4xl" fontFamily={"Work Sans"} color={"black"} px={4}>
+        <Text fontSize="4xl" fontFamily={"Helvetica"} color={"black"} px={4}>
           Talk-A-Tive
         </Text>
       </Box>

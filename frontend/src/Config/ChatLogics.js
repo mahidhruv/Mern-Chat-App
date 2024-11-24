@@ -2,30 +2,10 @@
 //   return users[0]._id === loggedUser._id ? users[1].name : users[0].name;
 // };
 
-import { Box, Text } from "@chakra-ui/react";
-
 export const getSender = (loggedUser, users) => {
   // Add safety checks
   if (!loggedUser || !users || !Array.isArray(users) || users.length < 2) {
-    return (
-      <>
-        <Box
-          display={"flex"}
-          alignItems={"center"}
-          h={"87vh"}
-          w={"100%"}
-          justifyContent={"center"}
-          flexDir={"column"}
-          paddingBottom={3}
-          fontFamily={"Helvetica"}
-          fontSize={"3xl"}
-        >
-          <Text textAlign={"center"}>
-            Please select a chat to start messaging...
-          </Text>
-        </Box>
-      </>
-    );
+    return null; // or return a default value/object based on your needs
   }
 
   return users[0]._id === loggedUser._id ? users[1].name : users[0].name;
@@ -52,4 +32,3 @@ const SingleChat = ({ loggedUser, chat }) => {
     </>
   );
 };
-

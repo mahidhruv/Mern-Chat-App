@@ -135,32 +135,76 @@ const SideDrawer = () => {
         },
       };
 
-      // this will return the chat that is selected
-      const { data } = await axios.post(`/api/chat`, { userId }, config);
+      // CHANGE 1: Add retry mechanism for chat creation
+      const createChat = async (retryCount = 0) => {
+        try {
+          const { data } = await axios.post(`/api/chat`, { userId }, config);
+          console.log("Chat creation response:", data);
 
-      // Check if the chat doesn't already exist in the chats array, and if so, add it
-      if (!chats.find((c) => c._id === data._id)) {
-        // If chat with this ID is NOT found. Add new chat to the beginning of the array
-        // New chat appears at the top
-        setChats([data, ...chats]);
+          if (!data || !data.users) {
+            if (retryCount < 2) {
+              // Try up to 2 times
+              await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100 ms
+              return await createChat(retryCount + 1);
+            }
+            throw new Error("Chat creation failed");
+          }
+          return data;
+        } catch (error) {
+          if (retryCount < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return await createChat(retryCount + 1);
+          }
+          throw error;
+        }
+      };
+
+      // CHANGE 2: First fetch user details
+      const userResponse = await axios.get(
+        `/api/user?search=${userId}`,
+        config
+      );
+      const selectedUser = Array.isArray(userResponse.data)
+        ? userResponse.data[0]
+        : userResponse.data;
+
+      // CHANGE 3: Create/fetch chat with retry mechanism
+      const chatData = await createChat();
+
+      // CHANGE 4: Update users array with full details
+      if (selectedUser && chatData.users) {
+        chatData.users = chatData.users.map((u) =>
+          u._id === selectedUser._id ? selectedUser : u
+        );
       }
-      setSelectedChat(data);
+
+      console.log("Final chat data:", chatData);
+
+      // Update chats list if needed
+      if (Array.isArray(chats)) {
+        if (!chats.find((c) => c._id === chatData._id)) {
+          setChats([chatData, ...chats]);
+        }
+      }
+
+      setSelectedChat(chatData);
       setChatLoading(false);
       handleDrawerClose();
-      // onClose();
     } catch (error) {
+      console.error("Chat access error:", error);
       toast({
         title: "Error fetching the chat",
-        description: error.message,
+        description: error.message || "Unable to load chat details",
         status: "error",
         duration: 3000,
         isClosable: true,
         position: "top-left",
       });
     } finally {
-      setChatLoading(false); // Always reset loading state
+      setChatLoading(false);
     }
   };
+
 
   return (
     <>
