@@ -14,6 +14,8 @@ import ProfileModal from "./Miscellaneous/ProfileModal";
 import UpdateGroupChatModal from "./Miscellaneous/UpdateGroupChatModal";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import axios from 'axios';
+import "./styles.css";
+import ScrollableChat from "./ScrollableChat";
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);
@@ -186,6 +188,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 <UpdateGroupChatModal
                   fetchAgain={fetchAgain}
                   setFetchAgain={setFetchAgain}
+                  fetchMessages={fetchMessages}
                 />
               </>
             )}
@@ -237,23 +240,12 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 </Box>
               </div>
             ) : (
-              <div>
+              <div className="messages">
                 {/* All of the messages */}
-                {/* <ScrollableChat messages={messages} /> */}
+                <ScrollableChat messages={messages} />
               </div>
             )}
             {/* Input Field to type the messages */}
-            {/* <FormControl onKeyDown={sendMessage} marginTop={3} isRequired>
-              <Input
-                variant="filled"
-                bg="#E0E0E0"
-                placeholder="Type a message..."
-                _hover={{ bg: "#E0E0E0" }}
-                value={newMessage}
-                onChange={typingHandler}
-              />
-            </FormControl> */}
-
             <FormControl
               display="flex"
               alignItems="flex-end"
@@ -304,7 +296,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 aria-label="Send message"
                 icon={<i className="fas fa-paper-plane"></i>}
                 onClick={sendMessage}
-                isLoading={loading}
+                // isLoading={loading}
                 borderRadius="full"
                 size="md"
                 alignSelf="flex-end" // Aligns button with the bottom of the input
