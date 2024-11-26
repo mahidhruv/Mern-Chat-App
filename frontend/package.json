@@ -14,11 +14,13 @@
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "framer-motion": "^11.11.8",
+    "lottie-react": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^5.3.4",
     "react-scripts": "5.0.1",
     "react-scrollable-feed": "^2.0.2",
+    "socket.io-client": "^4.8.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
