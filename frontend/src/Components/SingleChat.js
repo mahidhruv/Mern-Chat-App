@@ -32,7 +32,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const { user, selectedChat, setSelectedChat } = ChatState();
+  const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
   const toast = useToast();
 
@@ -53,7 +53,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         config
       );
 
-      console.log("message data:", data);
+      // console.log("message data:", data);
       // console.log("messages: ", messages);
       setMessages(data);
       // console.log("messages: ", messages);
@@ -86,6 +86,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     selectedChatCompare = selectedChat;
   }, [selectedChat]);
 
+  // console.log(notification, "check the message");
   // this runs every time that's why I removed dependency
   useEffect(() => {
     socket.on("message received", (newMessageReceived) => {
@@ -94,6 +95,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         selectedChatCompare._id !== newMessageReceived.chat._id
       ) {
         // give notification
+        if(!notification.includes(newMessageReceived)){
+          setNotification([newMessageReceived, ...notification]);
+          setFetchAgain(!fetchAgain);
+        }
       } else {
         setMessages([...messages, newMessageReceived]);
       }

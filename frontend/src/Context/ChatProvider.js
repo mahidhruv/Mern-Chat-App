@@ -17,6 +17,9 @@ const ChatProvider = ({ children }) => {
   // State to hold all the chats
   const [chats, setChats] = useState([]);
 
+  // State to hold notifications
+  const [notification, setNotification] = useState([]);
+
   // checking if the user is not logged in then push it to the "/" route
   // Get the history object from react-router-dom
   const history = useHistory();
@@ -40,7 +43,16 @@ const ChatProvider = ({ children }) => {
   // Render the provider component and pass the user state and setUser function as the context value
   return (
     <ChatContext.Provider
-      value={{ user, setUser, selectedChat, setSelectedChat, chats, setChats }}
+      value={{
+        user,
+        setUser,
+        selectedChat,
+        setSelectedChat,
+        chats,
+        setChats,
+        notification,
+        setNotification,
+      }}
     >
       {children}
     </ChatContext.Provider>

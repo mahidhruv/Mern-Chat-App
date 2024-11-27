@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Badge,
   Box,
   Button,
   Drawer,
@@ -29,6 +30,9 @@ import { useHistory } from "react-router-dom";
 import axios from "axios";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
+import { getSender } from "../../Config/ChatLogics";
+import NotificationBadge from "react-notification-badge";
+import { Effect } from "react-notification-badge";
 
 const SideDrawer = () => {
   const [search, setSearch] = useState("");
@@ -38,7 +42,14 @@ const SideDrawer = () => {
   const [chatLoading, setChatLoading] = useState();
 
   // Accessing user data, selected chat state, chats array and their setter functions from Chat context
-  const { user, setSelectedChat, chats, setChats } = ChatState();
+  const {
+    user,
+    setSelectedChat,
+    chats,
+    setChats,
+    notification,
+    setNotification,
+  } = ChatState();
 
   // history
   const history = useHistory();
@@ -205,7 +216,6 @@ const SideDrawer = () => {
     }
   };
 
-
   return (
     <>
       <Box
@@ -233,9 +243,62 @@ const SideDrawer = () => {
         <div>
           <Menu>
             <MenuButton padding={"1"}>
+              {/* Notification Badge */}
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
+
               <BellIcon fontSize={"2xl"} margin={"1"} />
             </MenuButton>
-            {/* <MenuList></MenuList> */}
+            {/* Rendering of the notifications */}
+            <MenuList
+              style={{
+                maxHeight: "300px", // Set maximum height
+                overflowY: "auto", // Enable scrolling if needed
+                padding: "10px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                border: "1px solid #e0e0e0",
+              }}
+            >
+              {!notification.length && "No New Messages"}
+              {notification.map((notif) => (
+                <MenuItem
+                  key={notif._id}
+                  onClick={() => {
+                    setSelectedChat(notif.chat);
+                    // setNotification(notification.filter((n) => n !== notif));
+                    // Filter out all notifications from the same chat
+                    const remainingNotifications = notification.filter(
+                      (n) => n.chat._id !== notif.chat._id
+                    );
+                    // If multiple notifications were cleared
+                    if (
+                      notification.length - remainingNotifications.length >
+                      1
+                    ) {
+                      toast({
+                        title: "Notifications Cleared",
+                        description: `Cleared ${
+                          notification.length - remainingNotifications.length
+                        } notifications from this chat`,
+                        status: "success",
+                        duration: 2000,
+                        isClosable: true,
+                        position: "top-right",
+                      });
+                    }
+
+                    setNotification(remainingNotifications);
+                  }}
+                >
+                  {notif.chat.isGroupChat
+                    ? `New Message in ${notif.chat.chatName}`
+                    : `New Message from ${getSender(user, notif.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
