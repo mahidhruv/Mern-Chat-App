@@ -19,6 +19,7 @@ import ScrollableChat from "./ScrollableChat";
 import io from "socket.io-client";
 import Lottie from "lottie-react";
 import typingAnimation from "../Animations/typing.json";
+import typingAnimationDots from "../Animations/typingDots.json";
 
 const ENDPOINT = "http://localhost:7000";
 let socket, selectedChatCompare;
@@ -34,11 +35,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const { user, selectedChat, setSelectedChat } = ChatState();
 
   const toast = useToast();
-
-  // handler to show the selected chat
-  const handleChatClick = (chat) => {
-    setSelectedChat(chat);
-  };
 
   // handler to fetch messages
   const fetchMessages = async () => {
@@ -108,13 +104,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const sendMessage = async () => {
     socket.emit("stop typing", selectedChat._id);
 
-    // Clear typing indicator immediately when sending
-    // if (typingTimeout) {
-    //   clearTimeout(typingTimeout);
-    // }
-    // socket.emit("stop typing", selectedChat._id);
-    // setTyping(false);
-
     if (newMessage.trim()) {
       // Check if message exists and isn't just whitespace
       try {
@@ -164,9 +153,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }
   };
 
-  const TYPING_TIMER_LENGTH = 3000; // 3 seconds
-  let typingTimeout = null; // Single timeout reference
-
   // handler to typing message
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
@@ -178,43 +164,36 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         : `${Math.min(e.target.scrollHeight, 200)}px`; // 200px is maxHeight
     e.target.style.height = newHeight;
 
-    // Typing indicator logic
+    // Typing indicator logic disappearing after 3 seconds
+    // if (socketConnected) {
+    //   if (!typing) {
+    //     setTyping(true);
+    //     socket.emit("typing", selectedChat._id);
+    //   }
+    //   let lastTypingTime = new Date().getTime();
+    //   var timerLength = 3000;
+    //   setTimeout(() => {
+    //     var timeNow = new Date().getTime();
+    //     var timeDiff = timeNow - lastTypingTime;
+    //     if (timeDiff >= timerLength && typing) {
+    //       socket.emit("stop typing", selectedChat._id);
+    //       setTyping(false);
+    //     }
+    //   }, timerLength);
+    // }
+
+    // Typing indicator logic for immediately disappear
     if (socketConnected) {
       if (!typing) {
         setTyping(true);
         socket.emit("typing", selectedChat._id);
       }
-      let lastTypingTime = new Date().getTime();
-      var timerLength = 3000;
-      setTimeout(() => {
-        var timeNow = new Date().getTime();
-        var timeDiff = timeNow - lastTypingTime;
-        if (timeDiff >= timerLength && typing) {
-          socket.emit("stop typing", selectedChat._id);
-          setTyping(false);
-        }
-      }, timerLength);
+      // Remove the setTimeout logic from here
+      if (e.target.value === "") {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
     }
-
-    // ⭐ MODIFIED: Improved typing indicator logic
-    // if (socketConnected) {
-    //   // ⭐ NEW: Clear any existing timeout
-    //   if (typingTimeout) {
-    //     clearTimeout(typingTimeout);
-    //   }
-
-    //   // Only emit if not already typing (unchanged)
-    //   if (!typing) {
-    //     setTyping(true);
-    //     socket.emit("typing", selectedChat._id);
-    //   }
-
-    //   // ⭐ MODIFIED: Simplified timeout logic
-    //   typingTimeout = setTimeout(() => {
-    //     socket.emit("stop typing", selectedChat._id);
-    //     setTyping(false);
-    //   }, TYPING_TIMER_LENGTH);
-    // }
   };
 
   // handler for enter key
@@ -233,23 +212,29 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       }, 0);
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+
+      // Stop typing before sending message
+      if (typing) {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
+
       sendMessage();
       // Reset height after sending message
       e.target.style.height = "40px";
     }
   };
 
+  // Add a new function to handle blur event
+  const handleBlur = () => {
+    if (typing) {
+      socket.emit("stop typing", selectedChat._id);
+      setTyping(false);
+    }
+  };
+
   const senderFull =
     selectedChat && user ? getSenderFull(user, selectedChat.users) : null;
-
-    const defaultOptions = {
-      loop: true,
-      autoplay: true,
-      animationData: typingAnimation,
-      rendererSettings: {
-        preserveAspectRatio: "xMidYMid slice",
-      },
-    };
 
   return (
     <>
@@ -348,31 +333,29 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             >
               <Box position="relative" width="100%" mr={2}>
                 {/* Typing animation */}
-                {/* {isTyping ? (
-                  <div
-                    style={{
-                      marginLeft: 10,
-                      marginBottom: 10,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Lottie
-                      options={defaultOptions}
-                      width={70}
-                      height={30}
-                      style={{ margin: 0, padding: 0 }}
-                    />
-                  </div>
-                ) : (
-                  <></>
-                )} */}
                 {isTyping ? (
                   <div>
                     <Lottie
-                      options={defaultOptions}
-                      width={70}
-                      style={{ margin: 0, padding: 0 }}
+                      animationData={typingAnimation}
+                      loop={true}
+                      autoplay={true}
+                      // style={{ width: 70, margin: 0, padding: 0 }}
+                      style={{
+                        width: 120,
+                        height: 80, // Control height explicitly
+                        margin: "10px 0", // Add margin top and bottom
+                        padding: 0,
+                        backgroundColor: "transparent", // Set background
+                        cursor: "default", // Change cursor style
+                        position: "relative", // For positioning
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                      }}
+                      // Additional Lottie props
+                      speed={1.5} // Control animation speed (1 is normal)
+                      direction={1} // 1 for forward, -1 for reverse
+                      segments={[0, 50]} // Play specific segments [startFrame, endFrame]
+                      preserveAspectRatio="xMidYMid meet" // Control how animation scales
                     />
                   </div>
                 ) : (
@@ -386,6 +369,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                   value={newMessage}
                   onChange={typingHandler}
                   onKeyDown={handleKeyDown}
+                  onBlur={handleBlur}
                   mr={2}
                   borderRadius="20px"
                   _focus={{
