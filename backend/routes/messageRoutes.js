@@ -1,6 +1,10 @@
-const express = require('express');
-const { protect } = require('../middleware/authMiddleware');
-const { sendMessage, allMessages } = require('../controllers/messageControllers');
+const express = require("express");
+const { protect } = require("../middleware/authMiddleware");
+const {
+  sendMessage,
+  allMessages,
+  markMessageAsRead,
+} = require("../controllers/messageControllers");
 
 const router = express.Router();
 
@@ -9,5 +13,8 @@ router.route("/").post(protect, sendMessage);
 
 // route for fetching the message -> /api/message/:chatId
 router.route("/:chatId").get(protect, allMessages);
+
+// route for mark the message as read
+router.put("/message/:messageId/read", protect, markMessageAsRead);
 
 module.exports = router;

@@ -35,7 +35,9 @@ const MyChats = ({ fetchAgain }) => {
   const cancelRef = useRef();
 
   // NEW: Add this state for backup
-  const [deletedChatBackup, setDeletedChatBackup] = useState(null);
+  // const [deletedChatBackup, setDeletedChatBackup] = useState(null);
+
+  // const [restoredChats, setRestoredChats] = useState(new Set());
 
   const toast = useToast();
 
@@ -56,6 +58,17 @@ const MyChats = ({ fetchAgain }) => {
         },
       };
       const { data } = await axios.get("/api/chat", config);
+
+      // NEW: Debug logging for deletion status (optional)
+      // console.log("Fetched non-deleted chats:", data);
+      // console.log(
+      //   "Active chats:",
+      //   data.map((chat) => ({
+      //     id: chat._id,
+      //     name: chat.chatName,
+      //     deletedFor: chat.deletedFor
+      //   }))
+      // );
 
       // console.log("Fetched chats:", data); // Debug log
       // console.log(
@@ -86,6 +99,52 @@ const MyChats = ({ fetchAgain }) => {
   };
 
   // Delete handler
+  // const handleDeleteConfirm = async () => {
+  //   if (!chatToDelete) return;
+
+  //   try {
+  //     const config = {
+  //       headers: {
+  //         "Content-type": "application/json",
+  //         Authorization: `Bearer ${user.token}`,
+  //       },
+  //     };
+
+  //     await axios.delete("/api/chat/delete", {
+  //       headers: config.headers,
+  //       data: { chatId: chatToDelete._id },
+  //     });
+
+  //     setChats(chats.filter((c) => c._id !== chatToDelete._id));
+
+  //     if (selectedChat?._id === chatToDelete._id) {
+  //       setSelectedChat(null);
+  //     }
+
+  //     toast({
+  //       title: "Chat Deleted Successfully",
+  //       status: "success",
+  //       duration: 3000,
+  //       isClosable: true,
+  //       position: "top",
+  //     });
+  //   } catch (error) {
+  //     toast({
+  //       title: "Error Deleting Chat",
+  //       description: error.response?.data?.message || "Something went wrong",
+  //       status: "error",
+  //       duration: 3000,
+  //       isClosable: true,
+  //       position: "top",
+  //     });
+  //   } finally {
+  //     // NEW: Clean up states
+  //     setIsDeleteAlertOpen(false);
+  //     setChatToDelete(null);
+  //   }
+  // };
+
+  // Delete handler with single sided delete functionality
   const handleDeleteConfirm = async () => {
     if (!chatToDelete) return;
 
@@ -97,19 +156,31 @@ const MyChats = ({ fetchAgain }) => {
         },
       };
 
-      await axios.delete("/api/chat/delete", {
+      // MAKE DELETE REQUEST 👇
+      const response = await axios.delete("/api/chat/delete", {
         headers: config.headers,
         data: { chatId: chatToDelete._id },
       });
 
-      setChats(chats.filter((c) => c._id !== chatToDelete._id));
+      // MODIFIED: Only remove chat from local state if it's permanently deleted
+      if (response.data.message === "Chat permanently deleted") {
+        setChats(chats.filter((c) => c._id !== chatToDelete._id));
+      } else {
+        // NEW: For single-sided deletion, just remove from current user's view
+        setChats((prevChats) =>
+          prevChats.filter((c) => c._id !== chatToDelete._id)
+        );
+      }
 
+      // Clear selected chat if it was deleted
       if (selectedChat?._id === chatToDelete._id) {
         setSelectedChat(null);
       }
 
+      // NEW: Show appropriate success message based on deletion type 👇
       toast({
-        title: "Chat Deleted Successfully",
+        title: "Chat Deleted",
+        description: response.data.message, // Will show "Chat deleted for you" or "Chat permanently deleted"
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -125,7 +196,7 @@ const MyChats = ({ fetchAgain }) => {
         position: "top",
       });
     } finally {
-      // NEW: Clean up states
+      // Clean up states
       setIsDeleteAlertOpen(false);
       setChatToDelete(null);
     }
@@ -194,12 +265,6 @@ const MyChats = ({ fetchAgain }) => {
 
     loadChats();
   }, [user, selectedChat, fetchAgain]); // Added dependencies
-
-  // // CHANGED: Added debug useEffect
-  // useEffect(() => {
-  //   // console.log("Selected Chat changed:", selectedChat);
-  //   // console.log("Current chats:", chats);
-  // }, [selectedChat, chats]);
 
   // CHANGED: Added explicit chat selection handler
   const handleChatSelect = (chat) => {
