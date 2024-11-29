@@ -4,8 +4,37 @@
   "description": "Chat app that allows one to one chat and group chat.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon backend/server.js"
+    "start": "nodemon backend/server.js",
+    "build": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --prefix frontend && npm run build --prefix frontend"
   },
+  "keywords": [
+    "chat",
+    "app",
+    "one",
+    "to",
+    "one",
+    "chat",
+    "group",
+    "chat",
+    "mern",
+    "stack",
+    "node",
+    "express",
+    "socket.io",
+    "mongodb",
+    "jwt",
+    "bcryptjs",
+    "colors",
+    "nodemon",
+    "dotenv",
+    "jsonwebtoken",
+    "express-async-handler",
+    "mongoose",
+    "mern",
+    "mern-chat-app",
+    "chat-app",
+    "talk-a-tive"
+  ],
   "author": "Dhruv Maheshwari",
   "license": "ISC",
   "dependencies": {
