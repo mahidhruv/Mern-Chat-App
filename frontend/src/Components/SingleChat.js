@@ -21,7 +21,10 @@ import Lottie from "lottie-react";
 import typingAnimation from "../Animations/typing.json";
 import typingAnimationDots from "../Animations/typingDots.json";
 
-const ENDPOINT = "http://localhost:7000";
+const ENDPOINT =
+  process.env.NODE_ENV === "production"
+    ? "https://talk-a-tive-adbc.onrender.com"
+    : "http://localhost:7000";
 let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {

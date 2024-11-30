@@ -4,8 +4,9 @@
   "description": "Chat app that allows one to one chat and group chat.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon backend/server.js",
-    "build": "npm install --legacy-peer-deps && npm install --legacy-peer-deps --prefix frontend && npm run build --prefix frontend"
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
   },
   "keywords": [
     "chat",
