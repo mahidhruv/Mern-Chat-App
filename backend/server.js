@@ -89,10 +89,7 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin:
-      process.env.NODE_ENV === "production"
-        ? "https://talk-a-tive-adbc.onrender.com" // Your Render domain
-        : "http://localhost:3000",
+    origin: "http://localhost:3000",
   },
 });
 
