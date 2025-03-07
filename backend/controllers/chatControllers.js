@@ -406,6 +406,38 @@ const removeFromGroup = asyncHandler(async (req, res) => {
   res.json(removed);
 });
 
+// Guest logout handler
+const deleteGuestChats = async (req, res) => {
+  try {
+    const guestUserId = req.params.userId;
+
+    // Instead of deleting chats, remove the guest user from the users array
+    await Chat.updateMany(
+      { users: { $elemMatch: { $eq: guestUserId } } },
+      { $pull: { users: guestUserId } }
+    );
+
+    // Instead of deleting messages, mark them as deleted for the guest user
+    await Message.updateMany(
+      {
+        $or: [
+          { sender: guestUserId },
+          {
+            chat: {
+              $in: await Chat.find({ users: guestUserId }).distinct("_id"),
+            },
+          },
+        ],
+      },
+      { $addToSet: { deletedFor: guestUserId } }
+    );
+
+    res.status(200).json({ message: "Guest chats removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error removing guest chats" });
+  }
+};
+
 module.exports = {
   accessChat,
   fetchChats,
@@ -414,4 +446,5 @@ module.exports = {
   addToGroup,
   removeFromGroup,
   deleteChat,
+  deleteGuestChats,
 };

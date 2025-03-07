@@ -9,10 +9,18 @@ const messageModel = mongoose.Schema(
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     content: { type: String, trim: true },
     chat: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
-    readBy: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
+    readBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
@@ -21,6 +29,9 @@ const messageModel = mongoose.Schema(
 
 // NEW INDEX FOR BETTER QUERY PERFORMANCE
 messageModel.index({ chat: 1, createdAt: -1 });
+
+// Add new index for deletedFor field to improve query performance
+messageModel.index({ deletedFor: 1 });
 
 const Message = mongoose.model("Message", messageModel);
 
